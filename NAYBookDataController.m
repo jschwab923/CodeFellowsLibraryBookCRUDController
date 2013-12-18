@@ -56,9 +56,7 @@ const NSString *_databaseName = @"Shelves";
 {
     NSMutableArray *booksFromTable = [NSMutableArray array];
     
-    sqlite3_open([_databasePath UTF8String], &_database);
-    
-    if (!_database) {
+    if (sqlite3_open([_databasePath UTF8String], &_database) != SQLITE_OK) {
         NSLog(@"Error opening database");
         return nil;
     }
@@ -93,7 +91,7 @@ const NSString *_databaseName = @"Shelves";
     } else {
         sqlite3_stmt *queryStatement;
         const char *addStatement = [[NSString stringWithFormat:
-                                     @"INSERT INTO %@ (id, title, author) VALUES('%i', '%@', '%@')", _tableName, (int)book.id, book.title, book.author] UTF8String];
+                                     @"INSERT INTO %@ (id, title, author) VALUES(\"%i\", \"%@\", \"%@\")", _tableName, (int)book.id, book.title, book.author] UTF8String];
         
         if (sqlite3_prepare_v2(_database, addStatement, -1, &queryStatement, NULL) != SQLITE_OK) {
             NSLog(@"Error preparing statment. Error: '%s'", sqlite3_errmsg(_database));
@@ -113,14 +111,13 @@ const NSString *_databaseName = @"Shelves";
 
 - (void)addArrayOfBooks:(NSArray *)books
 {
-    sqlite3_open([_databasePath UTF8String], &_database);
     
-    if (!_database) {
+    if (sqlite3_open([_databasePath UTF8String], &_database) != SQLITE_OK) {
         NSLog(@"Error opening database");
     } else {
         for (NAYBook *book in books) {
             sqlite3_stmt *queryStatement;
-            const char *addStatement = [[NSString stringWithFormat:@"INSERT INTO %@ (id, title, author) VALUES('%i', '%@', '%@')", _tableName, (int)book.id, book.title, book.author] UTF8String];
+            const char *addStatement = [[NSString stringWithFormat:@"INSERT INTO %@ (id, title, author) VALUES(\"%i\", \"%@\", \"%@\")", _tableName, (int)book.id, book.title, book.author] UTF8String];
             if (sqlite3_prepare_v2(_database, addStatement, -1, &queryStatement, nil) != SQLITE_OK) {
                 NSLog(@"Error preparing statment. Error: '%s'", sqlite3_errmsg(_database));
                 sqlite3_close(_database);
@@ -140,12 +137,10 @@ const NSString *_databaseName = @"Shelves";
 
 - (void)updateBook:(NAYBook *)book
 {
-    sqlite3_open([_databasePath UTF8String], &_database);
-    
-    if (!_database) {
+    if (sqlite3_open([_databasePath UTF8String], &_database) != SQLITE_OK) {
         NSLog(@"Error opening database");
     } else {
-        const char *updateStatement = [[NSString stringWithFormat:@"UPDATE %@ SET title='%@', author='%@' WHERE id='%i'", _tableName, book.title, book.author, (int)book.id] UTF8String];
+        const char *updateStatement = [[NSString stringWithFormat:@"UPDATE %@ SET title=\"%@\", author=\"%@\" WHERE id=\"%i\"", _tableName, book.title, book.author, (int)book.id] UTF8String];
         [self sqlQueryWithStatement:updateStatement];
         sqlite3_close(_database);
     }
@@ -153,14 +148,12 @@ const NSString *_databaseName = @"Shelves";
 
 - (void)deleteBook:(NAYBook *)book
 {
-    sqlite3_open([_databasePath UTF8String], &_database);
-    
-    if (!_database) {
+    if (sqlite3_open([_databasePath UTF8String], &_database) != SQLITE_OK) {
         NSLog(@"Error opening database");
         return;
     }
     
-    const char *deleteStatement = [[NSString stringWithFormat:@"DELETE FROM %@ WHERE id='%i'", _tableName, (int)book.id] UTF8String];
+    const char *deleteStatement = [[NSString stringWithFormat:@"DELETE FROM %@ WHERE id=\"%i\"", _tableName, (int)book.id] UTF8String];
     
     if (sqlite3_exec(_database, deleteStatement, NULL, NULL, NULL) == SQLITE_ABORT) {
         NSLog(@"Error deleting from database: Error: '%s'", sqlite3_errmsg(_database));
